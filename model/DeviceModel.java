@@ -17,6 +17,9 @@ public class DeviceModel {
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS devices (" +
                 "id INT AUTO_INCREMENT PRIMARY KEY," +
                 "ip VARCHAR(50) NOT NULL," +
+                "mac VARCHAR(50)," +
+                "name VARCHAR(100)," +
+                "version VARCHAR(50)," +
                 "type VARCHAR(20) NOT NULL" +
                 ")");
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS usage_logs (" +
@@ -33,19 +36,28 @@ public class DeviceModel {
     public List<Device> getAllDevices() throws SQLException {
         List<Device> devices = new ArrayList<>();
         Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT ip, type FROM devices");
+        ResultSet rs = stmt.executeQuery("SELECT ip, mac, name, version, type FROM devices");
         while (rs.next()) {
-            devices.add(new Device(rs.getString("ip"), rs.getString("type")));
+            devices.add(new Device(
+                rs.getString("ip"),
+                rs.getString("mac"),
+                rs.getString("name"),
+                rs.getString("version"),
+                rs.getString("type")
+            ));
         }
         rs.close();
         stmt.close();
         return devices;
     }
 
-    public void addDevice(String ip, String type) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement("INSERT INTO devices (ip, type) VALUES (?, ?)");
+    public void addDevice(String ip, String mac, String name, String version, String type) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement("INSERT INTO devices (ip, mac, name, version, type) VALUES (?, ?, ?, ?, ?)");
         ps.setString(1, ip);
-        ps.setString(2, type);
+        ps.setString(2, mac);
+        ps.setString(3, name);
+        ps.setString(4, version);
+        ps.setString(5, type);
         ps.executeUpdate();
         ps.close();
     }
@@ -89,23 +101,5 @@ public class DeviceModel {
         }
         rs.close();
         psSelect.close();
-    }
-
-    public static class Device {
-        private String ip;
-        private String type;
-
-        public Device(String ip, String type) {
-            this.ip = ip;
-            this.type = type;
-        }
-
-        public String getIp() {
-            return ip;
-        }
-
-        public String getType() {
-            return type;
-        }
     }
 }
